@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<title>Double to 128</title>
+<style>
+article {
+  height: 100vh;
+  width: 100vw;
+  max-height: 100vw;
+  max-width: 100vh;
+  margin: auto;
+  position: absolute;
+  top:0;bottom:0;
+  left:0;right:0;
+  display: flex;
+  flex-direction: column;
+  gap:2px;
+}
+
+article > div {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+button {
+  aspect-ratio: 5/4;
+  font-size: 8vh;
+  line-height: 8vh;
+}
+
+</style>
+
+<script>
+const CELL_ROWS = 4;
+const CELL_COLUMNS = 4;
+class Cells {
+  constructor() {
+    this.restart();
+  }
+  
+  //Checks if neighboring cells match current cell, and resets them if found.
+  checkNeighbors(x, y, num) {
+    const firstY = y === 0;
+    const lastY = y === CELL_ROWS - 1;
+    const firstX = x === 0;
+    const lastX = x === CELL_COLUMNS - 1;
+
+    let found = false;
+    if (!firstY && this.grid[x][y - 1] === num) {
+      this.reset(x, y - 1);
+      found = true;
+    }
+    if (!firstX && this.grid[x - 1][y] === num) {
+      this.reset(x - 1, y);
+      found = true;
+    }
+    if (!lastY && this.grid[x][y + 1] === num) {
+      this.reset(x, y + 1);
+      found = true;
+    }
+    if (!lastX && this.grid[x + 1][y] === num) {
+      this.reset(x + 1, y);
+      found = true;
+    }
+    return found;
+  }
+  
+  reset(x, y) {
+    this.grid[x][y] = 0;
+    let button = getButton(x, y);
+    button.textContent = "";
+    button.disabled = false;
+  }
+  
+  set(x, y, new_num) {
+    this.grid[x][y] = new_num;
+    let button = getButton(x, y);
+    if (new_num === 128) {
+      button.textContent = "💣";
+    } else {
+      button.textContent = new_num;
+    }
+    button.disabled = true;
+  }
+  
+  isFilled() {
+    for (let x = 0; x < CELL_ROWS; x++) {
+      for (let y = 0; y < CELL_COLUMNS; y++) {
+        if (this.grid[x][y] === 0) {
+          return false;
+        }
+      }
+    }
+    true
+  }
+  
+  restart() {
+    this.grid = [
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+    ];
+  }
+}
+
+//2 appears twice as often as 4.
+//4 appears twice as often as 8.
+//8 appears twice as often as 16.
+//etc, up to 128.
+function setNextNum(new_num) {
+  if (new_num !== undefined) {
+    next_num = new_num;
+  } else {
+    //Int range between 1 (inclusive) and 255 (inclusive)
+    const rand = Math.floor(Math.random() * 255) + 1;
+
+    if (rand === 1) {
+      next_num = 128;
+    } else if (rand >= 2 && rand <= 3) {
+      next_num = 64;
+    } else if (rand >= 4 && rand <= 7) {
+      next_num = 32;
+    } else if (rand >= 8 && rand <= 15) {
+      next_num = 16;
+    } else if (rand >= 16 && rand <= 31) {
+      next_num = 8;
+    } else if (rand >= 32 && rand <= 63) {
+      next_num = 4;
+    } else {
+      next_num = 2;
+    }
+  }
+  if (next_num === 128) {
+    document.getElementById("next_num").textContent = "💣";
+  } else {
+    document.getElementById("next_num").textContent = next_num;
+  }
+}
+
+window.onload = function() {
+  cells = new Cells();
+  setNextNum();
+  for (let x = 0; x < CELL_ROWS; x++) {
+    for (let y = 0; y < CELL_COLUMNS; y++) {
+      let button = getButton(x, y);
+      button.onclick = function() { clicked(x, y); }
+    }
+  }
+}
+
+function clicked(x, y) {
+  let new_num = next_num;
+  for (let z = 0; z < 4; z++) {
+    if (cells.checkNeighbors(x, y, new_num)) {
+      new_num *= 2;
+    } else {
+      break;
+    }
+  }
+  if (new_num == 128) {
+    alert("You Win! :D");
+    cells.restart();
+    return;
+  } else {
+    cells.set(x, y, new_num);
+  }
+  if (cells.isFilled()) {
+    alert("You Lost :(");
+    setNextNum(128);
+  } else {
+    setNextNum();
+  }
+}
+
+function getButton(x, y) {
+  return document.getElementById(`b${x}${y}`)
+}
+
+</script>
+
+<article>
+  <div>
+    <button disabled id="next_num"></button>
+  </div>
+  <div>
+    <button id="b00"></button>
+    <button id="b01"></button>
+    <button id="b02"></button>
+    <button id="b03"></button>
+  </div>
+  <div>
+    <button id="b10"></button>
+    <button id="b11"></button>
+    <button id="b12"></button>
+    <button id="b13"></button>
+  </div>
+  <div>
+    <button id="b20"></button>
+    <button id="b21"></button>
+    <button id="b22"></button>
+    <button id="b23"></button>
+  </div>
+  <div>
+    <button id="b30"></button>
+    <button id="b31"></button>
+    <button id="b32"></button>
+    <button id="b33"></button>
+  </div>
+</article>
