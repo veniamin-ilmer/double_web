@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <title>Double to 128</title>
 <style>
+/* Fit the content, maximizing to the screen, but maintaining the aspect ratio. */
+body {
+  margin: 0;
+  padding: 0;
+}
 article {
   height: 100vh;
   width: 100vw;
@@ -27,7 +32,6 @@ button {
   font-size: 8vh;
   line-height: 8vh;
 }
-
 </style>
 
 <script>
@@ -68,22 +72,50 @@ window.onload = function() {
 
     let found = false;
     if (!first_y && GRID[x][y - 1] === num) {
+      animate(x, y - 1, x, y, 0);
       reset(x, y - 1);
       found = true;
     }
     if (!first_x && GRID[x - 1][y] === num) {
+      animate(x - 1, y, x, y, 1);
       reset(x - 1, y);
       found = true;
     }
     if (!last_y && GRID[x][y + 1] === num) {
+      animate(x, y + 1, x, y, 2);
       reset(x, y + 1);
       found = true;
     }
     if (!last_x && GRID[x + 1][y] === num) {
+      animate(x + 1, y, x, y, 3);
       reset(x + 1, y);
       found = true;
     }
     return found;
+  }
+  
+  const animate = (source_x, source_y, dest_x, dest_y, button_index) => {
+    const ghost_button = GHOST_BUTTONS[button_index];
+  
+    const source_rect = BUTTONS[source_x][source_y].getBoundingClientRect();
+    ghost_button.style.transition = null;
+    ghost_button.style.transform = `translate(${source_rect.left}px, ${source_rect.top}px)`;
+    ghost_button.style.width = `${source_rect.width}px`;
+    ghost_button.style.height = `${source_rect.height}px`;
+    ghost_button.textContent = BUTTONS[source_x][source_y].textContent;
+    ghost_button.style.opacity = 1;
+    
+    const dest_rect = BUTTONS[dest_x][dest_y].getBoundingClientRect();
+    ghost_button.style.transition = "transform 200ms, opacity 200ms";
+    ghost_button.style.transform = `translate(${dest_rect.left}px, ${dest_rect.top}px)`;
+    ghost_button.style.opacity = 0;
+  }
+  
+  const set = (x, y, new_num) => {
+    GRID[x][y] = new_num;
+    const button = BUTTONS[x][y];
+    button.textContent = new_num;
+    button.disabled = true;
   }
   
   const reset = (x, y) => {
@@ -100,13 +132,6 @@ window.onload = function() {
       }
     }
     setNextNum();
-  }
-  
-  const set = (x, y, new_num) => {
-    GRID[x][y] = new_num;
-    const button = BUTTONS[x][y];
-    button.textContent = new_num;
-    button.disabled = true;
   }
   
   const isFilled = () => {
@@ -155,7 +180,16 @@ window.onload = function() {
   const CELL_ROWS = 4;
   const CELL_COLUMNS = 4;
 
-  let GRID = [
+  const GHOST_BUTTONS = [];
+  for (let i = 0; i < 4; i++) {
+    button = document.createElement("BUTTON");
+    button.style.position = "absolute";
+    button.style.opacity = 0;
+    document.body.appendChild(button);
+    GHOST_BUTTONS.push(button);
+  }
+
+  const GRID = [
     [0, 0, 0, 0],
     [0, 0, 0, 0],
     [0, 0, 0, 0],
