@@ -31,152 +31,151 @@ button {
 </style>
 
 <script>
-const CELL_ROWS = 4;
-const CELL_COLUMNS = 4;
-class Cells {
-  constructor() {
-    this.restart();
+window.onload = function() {
+  //Functions
+  const clicked = (x, y) => {
+    let new_num = NEXT_NUM;
+    for (let z = 0; z < 4; z++) {
+      if (checkNeighbors(x, y, new_num)) {
+        new_num *= 2;
+      } else {
+        break;
+      }
+    }
+    if (new_num == 128) {
+      alert("You Win! :D");
+      resetAll();
+      return;
+    } else {
+      set(x, y, new_num);
+    }
+    if (isFilled()) {
+      alert("You Lost :(");
+      button = document.getElementById("next_num");
+      button.textContent = "💣";
+      button.disabled = false;
+    } else {
+      setNextNum();
+    }
   }
-  
+
   //Checks if neighboring cells match current cell, and resets them if found.
-  checkNeighbors(x, y, num) {
-    const firstY = y === 0;
-    const lastY = y === CELL_ROWS - 1;
-    const firstX = x === 0;
-    const lastX = x === CELL_COLUMNS - 1;
+  const checkNeighbors = (x, y, num) => {
+    const first_y = y === 0;
+    const last_y = y === CELL_ROWS - 1;
+    const first_x = x === 0;
+    const last_x = x === CELL_COLUMNS - 1;
 
     let found = false;
-    if (!firstY && this.grid[x][y - 1] === num) {
-      this.reset(x, y - 1);
+    if (!first_y && GRID[x][y - 1] === num) {
+      reset(x, y - 1);
       found = true;
     }
-    if (!firstX && this.grid[x - 1][y] === num) {
-      this.reset(x - 1, y);
+    if (!first_x && GRID[x - 1][y] === num) {
+      reset(x - 1, y);
       found = true;
     }
-    if (!lastY && this.grid[x][y + 1] === num) {
-      this.reset(x, y + 1);
+    if (!last_y && GRID[x][y + 1] === num) {
+      reset(x, y + 1);
       found = true;
     }
-    if (!lastX && this.grid[x + 1][y] === num) {
-      this.reset(x + 1, y);
+    if (!last_x && GRID[x + 1][y] === num) {
+      reset(x + 1, y);
       found = true;
     }
     return found;
   }
   
-  reset(x, y) {
-    this.grid[x][y] = 0;
-    let button = getButton(x, y);
+  const reset = (x, y) => {
+    GRID[x][y] = 0;
+    const button = BUTTONS[x][y];
     button.textContent = "";
     button.disabled = false;
   }
   
-  set(x, y, new_num) {
-    this.grid[x][y] = new_num;
-    let button = getButton(x, y);
-    if (new_num === 128) {
-      button.textContent = "💣";
-    } else {
-      button.textContent = new_num;
+  const resetAll = () => {
+    for (let x = 0; x < CELL_ROWS; x++) {
+      for (let y = 0; y < CELL_COLUMNS; y++) {
+        reset(x, y);
+      }
     }
+    setNextNum();
+  }
+  
+  const set = (x, y, new_num) => {
+    GRID[x][y] = new_num;
+    const button = BUTTONS[x][y];
+    button.textContent = new_num;
     button.disabled = true;
   }
   
-  isFilled() {
+  const isFilled = () => {
     for (let x = 0; x < CELL_ROWS; x++) {
       for (let y = 0; y < CELL_COLUMNS; y++) {
-        if (this.grid[x][y] === 0) {
+        if (GRID[x][y] === 0) {
           return false;
         }
       }
     }
-    true
+    return true;
   }
   
-  restart() {
-    this.grid = [
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-    ];
-  }
-}
-
-//2 appears twice as often as 4.
-//4 appears twice as often as 8.
-//8 appears twice as often as 16.
-//etc, up to 128.
-function setNextNum(new_num) {
-  if (new_num !== undefined) {
-    next_num = new_num;
-  } else {
-    //Int range between 1 (inclusive) and 255 (inclusive)
-    const rand = Math.floor(Math.random() * 255) + 1;
+  //2 appears twice as often as 4.
+  //4 appears twice as often as 8.
+  //8 appears twice as often as 16.
+  //etc, up to 128.
+  const setNextNum = () => {
+    //Int range between 1 (inclusive) and 63 (inclusive)
+    const rand = Math.floor(Math.random() * 63) + 1;
 
     if (rand === 1) {
-      next_num = 128;
+      NEXT_NUM = 64;
     } else if (rand >= 2 && rand <= 3) {
-      next_num = 64;
+      NEXT_NUM = 32;
     } else if (rand >= 4 && rand <= 7) {
-      next_num = 32;
+      NEXT_NUM = 16;
     } else if (rand >= 8 && rand <= 15) {
-      next_num = 16;
+      NEXT_NUM = 8;
     } else if (rand >= 16 && rand <= 31) {
-      next_num = 8;
-    } else if (rand >= 32 && rand <= 63) {
-      next_num = 4;
+      NEXT_NUM = 4;
     } else {
-      next_num = 2;
+      NEXT_NUM = 2;
     }
+    NEXT_NUM_BUTTON.textContent = NEXT_NUM;
   }
-  if (next_num === 128) {
-    document.getElementById("next_num").textContent = "💣";
-  } else {
-    document.getElementById("next_num").textContent = next_num;
-  }
-}
 
-window.onload = function() {
-  cells = new Cells();
+  //Globals
+  const NEXT_NUM_BUTTON = document.getElementById("next_num");
+  const BUTTONS = [
+    [document.getElementById("a1"), document.getElementById("a2"), document.getElementById("a3"), document.getElementById("a4")],
+    [document.getElementById("b1"), document.getElementById("b2"), document.getElementById("b3"), document.getElementById("b4")],
+    [document.getElementById("c1"), document.getElementById("c2"), document.getElementById("c3"), document.getElementById("c4")],
+    [document.getElementById("d1"), document.getElementById("d2"), document.getElementById("d3"), document.getElementById("d4")],
+  ];
+  const CELL_ROWS = 4;
+  const CELL_COLUMNS = 4;
+
+  let GRID = [
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+  ];
+  let NEXT_NUM = 0;
+
+  //Main
+  NEXT_NUM_BUTTON.onclick = function() {
+    resetAll();
+    NEXT_NUM_BUTTON.disabled = true;
+  }
   setNextNum();
+
   for (let x = 0; x < CELL_ROWS; x++) {
     for (let y = 0; y < CELL_COLUMNS; y++) {
-      let button = getButton(x, y);
-      button.onclick = function() { clicked(x, y); }
+      BUTTONS[x][y].onclick = function() { clicked(x, y); }
     }
   }
 }
-
-function clicked(x, y) {
-  let new_num = next_num;
-  for (let z = 0; z < 4; z++) {
-    if (cells.checkNeighbors(x, y, new_num)) {
-      new_num *= 2;
-    } else {
-      break;
-    }
-  }
-  if (new_num == 128) {
-    alert("You Win! :D");
-    cells.restart();
-    return;
-  } else {
-    cells.set(x, y, new_num);
-  }
-  if (cells.isFilled()) {
-    alert("You Lost :(");
-    setNextNum(128);
-  } else {
-    setNextNum();
-  }
-}
-
-function getButton(x, y) {
-  return document.getElementById(`b${x}${y}`)
-}
-
 </script>
 
 <article>
@@ -184,27 +183,27 @@ function getButton(x, y) {
     <button disabled id="next_num"></button>
   </div>
   <div>
-    <button id="b00"></button>
-    <button id="b01"></button>
-    <button id="b02"></button>
-    <button id="b03"></button>
+    <button id="a1"></button>
+    <button id="a2"></button>
+    <button id="a3"></button>
+    <button id="a4"></button>
   </div>
   <div>
-    <button id="b10"></button>
-    <button id="b11"></button>
-    <button id="b12"></button>
-    <button id="b13"></button>
+    <button id="b1"></button>
+    <button id="b2"></button>
+    <button id="b3"></button>
+    <button id="b4"></button>
   </div>
   <div>
-    <button id="b20"></button>
-    <button id="b21"></button>
-    <button id="b22"></button>
-    <button id="b23"></button>
+    <button id="c1"></button>
+    <button id="c2"></button>
+    <button id="c3"></button>
+    <button id="c4"></button>
   </div>
   <div>
-    <button id="b30"></button>
-    <button id="b31"></button>
-    <button id="b32"></button>
-    <button id="b33"></button>
+    <button id="d1"></button>
+    <button id="d2"></button>
+    <button id="d3"></button>
+    <button id="d4"></button>
   </div>
 </article>
